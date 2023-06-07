@@ -42,7 +42,7 @@ const geocode = async (batchSize = 200) => {
       });
     } catch (err) {
       console.log(err);
-      fs.writeFileSync(`${dir}institutions.json`, JSON.stringify(allInstitutions, null, 2));
+      fs.writeFileSync(`${dir}/institutions.json`, JSON.stringify(allInstitutions, null, 2));
       console.log('file saved');
       return;
     }
