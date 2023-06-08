@@ -45,4 +45,4 @@ const geocode = async (batchSize = 200) => {
   }
 }
 
-geocode(19);
+geocode(20);
