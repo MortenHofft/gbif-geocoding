@@ -16,9 +16,9 @@ const geocode = async (batchSize = 200) => {
     return !institution.latitude && !institution.longitude;
   });
 
-  // only consider records that are not managed in index herbariorum
+  // only consider records that are not managed with a mastersource elsewhere
   institutions = institutions.filter((institution) => {
-    return !institution.indexHerbariorumRecord;
+    return !institution?.masterSourceMetadata?.source;
   });
 
   // only consider publishers that do not already have a google_geocode field
