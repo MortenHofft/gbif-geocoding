@@ -17,7 +17,9 @@
   },
   "homepage": "https://github.com/MortenHofft/gbif-geocoding#readme",
   "dependencies": {
+    "async": "^3.2.4",
     "axios": "^1.4.0",
+    "crawler": "^1.4.0",
     "lodash": "^4.17.21",
     "qs": "^6.11.2"
   }
