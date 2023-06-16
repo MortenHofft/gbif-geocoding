@@ -17,6 +17,12 @@ const geocode = async (batchSize = 200) => {
     return !institutionsWithSuggestions.includes(institution.key);
   });
 
+  // only consider institutions from country GB
+  institutions = institutions.filter((institution) => {
+    return institution.address?.country === 'GB' || institution.mailingAddress?.country === 'GB';
+  });
+  
+
   for (var i = 0; i < batchSize; i++) {
     const institution = institutions[i];
     if (!institution) break;
@@ -45,4 +51,4 @@ const geocode = async (batchSize = 200) => {
   }
 }
 
-geocode(20);
+geocode(5);

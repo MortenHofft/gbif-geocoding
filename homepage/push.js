@@ -16,10 +16,9 @@ const suggest = async (batchSize = 200) => {
   institutions = institutions.filter((institution) => [false, 404, 'ETIMEDOUT', 'ENOTFOUND', 'ECONNREFUSED', 500, 504, 502, 503, 'ECONNRESET', 'ENETUNREACH', 'EHOSTUNREACH'].indexOf(institution._isValidHomePage) !== -1);
 
   // temp filter on us institutions alone
-  // institutions = institutions.filter((institution) => institution?.address?.country === 'US');
+  institutions = institutions.filter((institution) => (institution?.address?.country === 'GB' || institution?.mailingAddress?.country === 'GB'));
   // and only 404s
-  // institutions = institutions.filter((institution) => [404].indexOf(institution._isValidHomePage) !== -1);
-
+  // institutions = institutions.filter((institution) => ['ENOTFOUND'].indexOf(institution._isValidHomePage) !== -1);
 
   // only consider institutions that do not already have been suggested
   institutions = institutions.filter((institution) => {
@@ -46,11 +45,11 @@ const suggest = async (batchSize = 200) => {
         delete cleanedInstitution.homepage;
       }
 
-      let comments = ['The suggestion is based on automated processing. So please check the data before accepting the suggestion. See also https://github.com/gbif/registry-console/issues/532'];
-      comments.push(`Suggested google search: https://www.google.com/search?q=${encodeURIComponent(institution.name)}`);
+      let comments = ['This suggestion is machine generated, so extra care is needed in the review. See https://github.com/gbif/registry-console/issues/532'];
+      comments.push(`Search Google: https://www.google.com/search?q=${encodeURIComponent(institution.name)}`);
 
       if (!cleanedInstitution.homepage) {
-        comments.push('The homepage was ' + institution.homepage + ' but we failed to fetch it. It might just have been temporarily unavaiable of blocking robots.');
+        comments.push('We couldn\'t reach ' + institution.homepage + '. It might just have been temporarily unavaiable of blocking robots.');
       } else {
         comments.push('The homepage ' + institution.homepage + ' was a 404, but ' + cleanedInstitution.homepage + ' was valid.');
       }
@@ -74,4 +73,4 @@ const suggest = async (batchSize = 200) => {
   }
 }
 
-suggest(1);
+suggest(10);
