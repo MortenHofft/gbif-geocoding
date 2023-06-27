@@ -17,21 +17,39 @@ const geocode = async (batchSize = 200) => {
     return !institutionsWithSuggestions.includes(institution.key);
   });
 
-  // only consider institutions from country GB
+  // only consider institutions from country XX
+  const countryCodeFilter = 'AU';
   institutions = institutions.filter((institution) => {
-    return institution.address?.country === 'GB' || institution.mailingAddress?.country === 'GB';
+    return institution.address?.country === countryCodeFilter || institution.mailingAddress?.country === countryCodeFilter;
   });
   
+  console.log('how many left for this filter: ', institutions.length);
 
   for (var i = 0; i < batchSize; i++) {
     const institution = institutions[i];
     if (!institution) break;
 
     try {
-      const cleanedInstitution = { ...institution };
+      const freshInstitution = await axios.get('http://api.gbif.org/v1/grscicoll/institution/' + institution.key);
+      const cleanedInstitution = { ...freshInstitution.data };
+      
+      // check that the homepage hasn't changed since
+      if (cleanedInstitution.latitude !== institution.latitude) {
+        console.log('latitude has changed since');
+        continue;
+      }
+      if (JSON.stringify(cleanedInstitution.address) !== JSON.stringify(institution.address)) {
+        console.log('address has changed since');
+        continue;
+      }
+      if (JSON.stringify(cleanedInstitution.mailingAddress) !== JSON.stringify(institution.mailingAddress)) {
+        console.log('mailing address has changed since');
+        continue;
+      }
+
       cleanedInstitution.latitude = institution.google_geocoded.latitude;
       cleanedInstitution.longitude = institution.google_geocoded.longitude;
-      delete cleanedInstitution.google_geocoded;
+
       let payload = {
         type: 'UPDATE',
         suggestedEntity: cleanedInstitution,
@@ -51,4 +69,4 @@ const geocode = async (batchSize = 200) => {
   }
 }
 
-geocode(5);
+geocode(10);

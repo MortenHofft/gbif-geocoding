@@ -12,11 +12,22 @@ const suggest = async (batchSize = 200) => {
     return !institution?.masterSourceMetadata?.source;
   });
 
+  // only consider records that are still active
+  institutions = institutions.filter((institution) => {
+    return institution?.active;
+  });
+
+  // temp filter on country XX institutions alone
+  const countryCodeFilter = 'AU';
+  institutions = institutions.filter((institution) => (institution?.address?.country === countryCodeFilter || institution?.mailingAddress?.country === countryCodeFilter));
+
+//   const noHomePage = institutions.filter((institution) => typeof institution._isValidHomePage === 'undefined');
+//   noHomePage.forEach((institution) => {console.log(institution.key, institution.name)});
+//   console.log('no homepage: ', noHomePage.length);
+// return;
   institutions = institutions.filter((institution) => typeof institution._isValidHomePage !== 'undefined');
   institutions = institutions.filter((institution) => [false, 404, 'ETIMEDOUT', 'ENOTFOUND', 'ECONNREFUSED', 500, 504, 502, 503, 'ECONNRESET', 'ENETUNREACH', 'EHOSTUNREACH'].indexOf(institution._isValidHomePage) !== -1);
 
-  // temp filter on us institutions alone
-  institutions = institutions.filter((institution) => (institution?.address?.country === 'GB' || institution?.mailingAddress?.country === 'GB'));
   // and only 404s
   // institutions = institutions.filter((institution) => ['ENOTFOUND'].indexOf(institution._isValidHomePage) !== -1);
 
@@ -24,6 +35,8 @@ const suggest = async (batchSize = 200) => {
   institutions = institutions.filter((institution) => {
     return !institutionsWithSuggestions.includes(institution.key);
   });
+
+  console.log('how many left for this filter: ', institutions.length);
 
   for (var i = 0; i < batchSize; i++) {
     const institution = institutions[i];
