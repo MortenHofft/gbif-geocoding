@@ -3,7 +3,7 @@ const dir = __dirname;
 const getCoordinates = require('./getCoordinates');
 let allInstitutions = require('./institutions.json');
 
-const geocode = async (batchSize = 200) => {
+const geocode = async (batchSize = 200, countryCode) => {
   let instititions = allInstitutions;
   // filter on institutions that have an address field
   let institutions = instititions.filter((institution) => {
@@ -25,6 +25,13 @@ const geocode = async (batchSize = 200) => {
   institutions = institutions.filter((institution) => {
     return !institution.google_geocoded;
   });
+
+  // only consider institutions from country XX
+  if (countryCode) {
+    institutions = institutions.filter((institution) => {
+      return institution.address?.country === countryCode || institution.mailingAddress?.country === countryCode;
+    });
+  }
 
   console.log('left ', institutions.length);
 
@@ -65,4 +72,4 @@ async function batchGeocode() {
 }
 
 // batchGeocode();
-geocode(10);
+geocode(100, 'IT');

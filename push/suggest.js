@@ -4,7 +4,7 @@ const dir = __dirname;
 let allInstitutions = require('../transform/institutions.json');
 let institutionsWithSuggestions = require('./institutionsWithSuggestions.json');
 
-const geocode = async (batchSize = 200) => {
+const geocode = async ({batchSize = 200, countryCodeFilter, testRun = false}) => {
   let institutions = allInstitutions;
 
   // only consider institutions that have a google_geocoded field with a latitude
@@ -18,7 +18,6 @@ const geocode = async (batchSize = 200) => {
   });
 
   // only consider institutions from country XX
-  const countryCodeFilter = 'AU';
   institutions = institutions.filter((institution) => {
     return institution.address?.country === countryCodeFilter || institution.mailingAddress?.country === countryCodeFilter;
   });
@@ -33,7 +32,7 @@ const geocode = async (batchSize = 200) => {
       const freshInstitution = await axios.get('http://api.gbif.org/v1/grscicoll/institution/' + institution.key);
       const cleanedInstitution = { ...freshInstitution.data };
       
-      // check that the homepage hasn't changed since
+      // check that the latitude hasn't changed since
       if (cleanedInstitution.latitude !== institution.latitude) {
         console.log('latitude has changed since');
         continue;
@@ -57,16 +56,24 @@ const geocode = async (batchSize = 200) => {
         comments: ['The suggestion is based on Google Geocode data. So please check the data before accepting the suggestion. See also https://github.com/gbif/registry-console/issues/528'],
         entityKey: institution.key
       }
-      const response = await axios.post('http://api.gbif.org/v1/grscicoll/institution/changeSuggestion', payload);
+      if (!testRun) {
+        const response = await axios.post('http://api.gbif.org/v1/grscicoll/institution/changeSuggestion', payload);
 
-      institutionsWithSuggestions.push(institution.key);
-      fs.writeFileSync(`${dir}/institutionsWithSuggestions.json`, JSON.stringify(institutionsWithSuggestions, null, 2));
+        institutionsWithSuggestions.push(institution.key);
+        fs.writeFileSync(`${dir}/institutionsWithSuggestions.json`, JSON.stringify(institutionsWithSuggestions, null, 2));
+      }
     } catch (err) {
       console.log(err);
       console.log('institution: ' + institution?.key);
-      fs.writeFileSync(`${dir}/institutionsWithSuggestions.json`, JSON.stringify(institutionsWithSuggestions, null, 2));
+      if (!testRun) {
+        fs.writeFileSync(`${dir}/institutionsWithSuggestions.json`, JSON.stringify(institutionsWithSuggestions, null, 2));
+      }
     }
   }
 }
 
-geocode(10);
+geocode({
+  batchSize: 20, 
+  countryCodeFilter: 'IT',
+  testRun: false
+});
